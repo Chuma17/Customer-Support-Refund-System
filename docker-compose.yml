@@ -1,0 +1,39 @@
+﻿services:
+
+  postgres:
+    image: postgres:17
+    container_name: refund-postgres
+    environment:
+      POSTGRES_DB: worknoon_refunds
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./CustomerSupportRefundSystem-API
+    container_name: refund-backend
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=worknoon_refunds;Username=postgres;Password=postgres
+      OpenAI__ApiKey: ${OPENROUTER_API_KEY}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+  frontend:
+    build:
+      context: ./CustomerSupportRefundSystem-Frontend
+    container_name: refund-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
